@@ -159,7 +159,7 @@ export PATH=$PATH:/var/lib/gems/1.8/bin/
 export PATH=$PATH:/home/jperla/programs/
 export PATH=$PATH:/Users/josephperla/apps/scala/bin/
 
-export JAVA_HOME="/usr/lib/jvm/java-6-sun/"
+export JAVA_HOME="/etc/alternatives/java_sdk_1.6.0"
 export SCALA_HOME="/Users/josephperla/apps/scala"
 export MYSQL_CONNECTOR_JAR="/usr/share/java/mysql-connector-java.jar"
 
