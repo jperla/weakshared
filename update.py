@@ -3,6 +3,7 @@
 import sys
 import subprocess
 
+homedir = '/home/princeton_ram'
 
 def remote_run(node, command):
     c = subprocess.Popen(['ssh', '-t', '-o', 'StrictHostKeyChecking=no', 'node%s.princeton.vicci.org' % node, '-X',] + command, stdout=subprocess.PIPE)
@@ -29,9 +30,8 @@ def install_packages_on_all_nodes():
 def rsync_all():
     outputs = []
     # runs in parallel
-    dir = '/home/princeton_ram'
     for n in other_nodes:
-        command = 'rsync -a -r --exclude-from {0}/weakshared/exclude.txt -P {0}/ node{1}.princeton.vicci.org:{0}'.format(dir, n)
+        command = 'rsync -a -r --exclude-from {0}/weakshared/exclude.txt -P {0}/ node{1}.princeton.vicci.org:{0}'.format(homedir, n)
         print command
         # command = 'rsync -a -r -P {0}/spark/ node{1}.princeton.vicci.org:{0}/spark'.format(dir, n)
         c = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE)
@@ -42,23 +42,31 @@ def rsync_all():
         print e, '\n'
  
 def clear_logs():
-    command = 'rm -rf /home/princeton_ram/mesos/work/*'
+    command = 'rm -rf {0}/mesos/work/*'.format(homedir)
     return run_on_all_nodes(command)
-
-def print_logs():
-    command = 'cat /home/princeton_ram/mesos/work/*/*/*/*/*/*/*/*/*'
-    return run_on_all_nodes(command, print_output=True)
 
 def symlink_java_shit():
     command = 'sudo ln -s /etc/alternatives/java_sdk_1.6.0/jre/lib/amd64/server/libjvm.so /usr/lib64/libjvm.so'
     return run_on_all_nodes(command)
+ 
+
+def fixmesos():
+    return subprocess.call(['{0}/mesos/deploy/fix_mesos.sh'.format(homedir)])
+
+def sbtcompile():
+    return subprocess.call(['{0}/spark/sbt/sbt'.format(homedir), 'compile'])
+    
+
+def print_logs():
+    command = 'cat /home/princeton_ram/mesos/work/*/*/*/*/*/*/*/*/*'
+    return run_on_all_nodes(command, print_output=True)
 
 if __name__ == '__main__':
     #symlink_java_shit()
     #install_packages_on_all_nodes()
 
     if len(sys.argv) <= 1:
-        print 'What to update? rsync, clearlogs, printlogs'
+        print 'What to update? compile, fixmesos, rsync, clearlogs, printlogs'
     else: 
         todo = sys.argv[1:]
 
@@ -67,6 +75,9 @@ if __name__ == '__main__':
         if 'all70' in todo:
             other_nodes = [10] + range(12, 71)
 
+        if 'compile' in todo:
+            sbtcompile()
+
         if 'rsync' in todo:
             rsync_all()
         if 'clearlogs' in todo:
@@ -74,3 +85,5 @@ if __name__ == '__main__':
         if 'printlogs' in todo:
             print_logs()
 
+        if 'fixmesos' in todo:
+            fixmesos()
