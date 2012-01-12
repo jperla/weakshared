@@ -156,11 +156,9 @@ declare -x SOLR_PEOPLE_SEARCH_URL="http://localhost:8081/solr-people"
 
 
 export PATH=$PATH:/var/lib/gems/1.8/bin/
-export PATH=$PATH:/home/jperla/programs/
-export PATH=$PATH:/Users/josephperla/apps/scala/bin/
 
 export JAVA_HOME="/etc/alternatives/java_sdk_1.6.0"
-export SCALA_HOME="/Users/josephperla/apps/scala"
+export SCALA_HOME="/home/princeton_ram/scala-2.9.1.final"
 export MYSQL_CONNECTOR_JAR="/usr/share/java/mysql-connector-java.jar"
 
 umask 002

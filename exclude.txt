@@ -1,0 +1,1 @@
+/home/princeton_ram/mesos/logs
