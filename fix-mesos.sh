@@ -6,6 +6,6 @@ $DEPLOY_DIR/stop-mesos
 
 sleep 1
 
-$DEPLOY_DIR/start-mesos
+$DEPLOY_DIR/start-mesos $1
 
 
