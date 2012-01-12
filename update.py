@@ -33,8 +33,8 @@ def rsync_all():
     dir = '/home/princeton_ram'
     for n in other_nodes:
         command = 'rsync -a -r --exclude-from {0}/weakshared/exclude.txt -P {0}/ node{1}.princeton.vicci.org:{0}'.format(dir, n)
+        print command
         # command = 'rsync -a -r -P {0}/spark/ node{1}.princeton.vicci.org:{0}/spark'.format(dir, n)
-        print n
         c = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE)
         outputs.append(c)
 
