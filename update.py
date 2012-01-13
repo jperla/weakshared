@@ -6,7 +6,7 @@ import subprocess
 homedir = '/home/princeton_ram'
 
 def remote_run(node, command):
-    c = subprocess.Popen(['ssh', '-t', '-o', 'StrictHostKeyChecking=no', 'node%s.princeton.vicci.org' % node, '-X',] + command, stdout=subprocess.PIPE)
+    c = subprocess.Popen(['ssh', '-t', '-o', 'StrictHostKeyChecking=no', 'node%s.princeton.vicci.org' % node, '-X',] + command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return c
 
 def run_on_all_nodes(command, print_output=False):
@@ -21,7 +21,8 @@ def run_on_all_nodes(command, print_output=False):
         o,e = output.communicate()
         if print_output:
             print o
-        print e, '\n\n'
+        if e is not None:
+            print e, '\n\n'
 
 def install_packages_on_all_nodes():
     command = 'sudo yum -y install vim git htop java-1.6.0-openjdk-devel libunwind.x86_64 libsqlite3x-devel.x86_64 cppunit-devel.x86_64 cppunit.x86_64 && sudo yum -y groupinstall "Development Tools"'
@@ -34,12 +35,13 @@ def rsync_all():
         command = 'rsync -a -r --exclude-from {0}/weakshared/exclude.txt -P {0}/ node{1}.princeton.vicci.org:{0}'.format(homedir, n)
         print command
         # command = 'rsync -a -r -P {0}/spark/ node{1}.princeton.vicci.org:{0}/spark'.format(dir, n)
-        c = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE)
+        c = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         outputs.append(c)
 
     for output in outputs:
         o,e = output.communicate()
-        print e, '\n'
+        if e is not None:
+            print e, '\n'
  
 def clear_logs():
     command = 'rm -rf {0}/mesos/work/*'.format(homedir)
@@ -51,10 +53,10 @@ def symlink_java_shit():
  
 
 def fixmesos():
-    return subprocess.call(['{0}/mesos/deploy/fix_mesos.sh'.format(homedir)])
+    return subprocess.call(['{0}/mesos/deploy/fix_mesos.sh'.format(homedir)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 def sbtcompile():
-    return subprocess.call(['{0}/spark/sbt/sbt'.format(homedir), 'compile'])
+    return subprocess.call(['{0}/spark/sbt/sbt'.format(homedir), 'compile'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
 
 def print_logs():
