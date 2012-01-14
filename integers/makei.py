@@ -18,7 +18,7 @@ def make_constraint(n):
             constraint.append(rand_in_range(r))
         else:
             constraint.append(0)
-    constraint.append(rand_in_range(r * n))
+    constraint.append(rand_in_range(r * n / 3))
     return constraint
 
 def does_solution_meet_constraint(solution, constraint):
@@ -29,8 +29,8 @@ def does_solution_meet_constraint(solution, constraint):
     else:
         return False
 
-n = 20
-num_constraints = n * 30
+n = 50
+num_constraints = n * 5
 
 solution = [random.randint(0,1) for i in xrange(n)]
 

@@ -4,54 +4,112 @@ import org.apache.commons.math.optimization.linear._
 import java.util.Collection;
 import org.apache.commons.math.optimization.GoalType;
 
+import org.apache.commons.math.optimization.RealPointValuePair;
+import org.apache.commons.math.optimization.linear.NoFeasibleSolutionException
+
 
 
 object HelloWorld {
   type Guess = Array[Int]
+
+  def getLHS(row : Array[Double]) : Array[Double] = {
+    val sizeOfSolution = row.size - 1
+    var lhs = new Array[Double](sizeOfSolution)
+    for (i <- 0 until lhs.size) {
+        lhs(i) = row(i)
+    }
+    return lhs
+  }
   
   def solveRelaxation(table : Array[Array[Double]], guessed : Guess) : Double = {
+    val sizeOfSolution = table(0).size - 1
+
+    var objective = new Array[Double](sizeOfSolution)
+    for(i <- 0 until objective.size) {
+        objective.update(i, 1)
+    }
+
     // describe the optimization problem
-    var f = new LinearObjectiveFunction(Array[Double]( 2, -1 ), -5.0);
+    var f = new LinearObjectiveFunction(objective, 0.0);
     var constraints = new ArrayList() : Collection[LinearConstraint];
-    constraints.add(new LinearConstraint(Array[Double]( 1, 2 ), Relationship.LEQ, 6.0));
-    constraints.add(new LinearConstraint(Array[Double]( 3, 2 ), Relationship.LEQ, 12.0));
-    constraints.add(new LinearConstraint(Array[Double]( 0, 1 ), Relationship.GEQ, 0.0));
+
+    // set constraints of guessed equality vars
+    for (i <- 0 until guessed.size) {
+      val value = guessed(i)
+      var one = new Array[Double](sizeOfSolution)
+      one(i) = 1
+      constraints.add(new LinearConstraint(one, Relationship.EQ, value));
+    }
+
+    // set constraints of vars to be less than 1
+    for (i <- guessed.size until sizeOfSolution) {
+      val value = 1
+      var one = new Array[Double](sizeOfSolution)
+      one(i) = 1
+      constraints.add(new LinearConstraint(one, Relationship.LEQ, value));
+    }
+
+    // set constraints of rest of table
+    for (row <- table) {
+      val lhs = getLHS(row)
+      val value = row(row.size-1)
+      constraints.add(new LinearConstraint(lhs, Relationship.LEQ, value));
+    }
+
+    /*
+    for(c1 <- constraints.toArray()) {
+        val c = c1.asInstanceOf[LinearConstraint]
+        println("Constraint: " + c.getCoefficients() + " " + c.getRelationship().toString + " " + c.getValue())
+    }
+    */
+
     // create and run the solver
-    var solution = new SimplexSolver().optimize(f, constraints, GoalType.MAXIMIZE, false);
+    //var solution : RealPointValuePair = try { new SimplexSolver().optimize(f, constraints, GoalType.MAXIMIZE, true) } catch { case e : Exception => new RealPointValuePair(Array[Double](0,0), Double.NegativeInfinity) };
+    var solver = new SimplexSolver()
+    solver.setMaxIterations(1000)
+    var solution : RealPointValuePair = try { solver.optimize(f, constraints, GoalType.MAXIMIZE, true) } catch { case e : NoFeasibleSolutionException => new RealPointValuePair(Array[Double](0,0), Double.NegativeInfinity) };
+
     // get the solution
     val p = solution.getPoint();
-    val min = solution.getValue();
+    val max = solution.getValue();
 
     /*
     for (i <- 0 until p.size) {
-        println("p: " + p(i))
+        println("p: " + arrayToString(p))
     }
-    println("min: " + min)
     */
+    println("max: " + max)
 
-    return Double.PositiveInfinity 
+    return max
   }
 
   def nextSubtree(sizeOfSolution : Int, guess : Guess) : Guess = {
     val s = guess.size
-    // go back to last zero
-
-    var i = s-1
-    while (i >= 0 && guess(i) == 1) {
-        i -= 1
-    }
-    var lastZero = i
-    
-    if (lastZero > -1) {
-      val newGuess = new Array[Int](lastZero + 1)
-      for(i <- 0 until newGuess.size) {
-        newGuess.update(i, guess(i))
-      }
-      newGuess.update(lastZero, 1)
-      return newGuess
+    println("nextSubtree of " + arrayToString(guess))
+    if (guess(s-1) == 0) {
+      println("last is 0")
+      guess(s-1) = 1
+      return guess
     } else {
-      // all 1's, so return null? itself?
-      return null
+      println("last is 1")
+      // go back to last zero
+      var i = s-1
+      while (i >= 0 && guess(i) == 1) {
+          i -= 1
+      }
+      var lastZero = i
+    
+      if (lastZero > -1) {
+        val newGuess = new Array[Int](lastZero + 1)
+        for(i <- 0 until newGuess.size) {
+          newGuess.update(i, guess(i))
+        }
+        newGuess.update(lastZero, 1)
+        return newGuess
+      } else {
+        // all 1's, so return null? itself?
+        return null
+      }
     }
   }
 
@@ -72,9 +130,13 @@ object HelloWorld {
   }
 
 
-  def arrayToString(guess : Array[Int]) : String = {
+  def arrayToString[T] (guess : Array[T]) : String = {
     if (guess != null) {
-      return "(" + (guess.map(i => i.toString).reduceLeft(_ + ", " + _)) + ")"
+      if (guess.size == 0) {
+        return "()"
+      } else {
+        return "(" + (guess.map(i => i.toString).reduceLeft(_ + ", " + _)) + ")"
+      }
     } else {
       return "null"
     }
@@ -92,7 +154,7 @@ object HelloWorld {
 
   def main(args: Array[String]) {
     // get the data into array of array (table)
-    val source = Source.fromFile("medium.csv")
+    val source = Source.fromFile("program.csv")
     val lines = source.mkString.split("\n")
     source.close()
     val table = lines.map(l => l.split(",").map(i => i.toDouble))
@@ -101,7 +163,7 @@ object HelloWorld {
     println("size of solution: " + sizeOfSolution);
     var lowerBound = 0.0
     var bestGuess = Array[Int]()
-    var upperBound = Double.PositiveInfinity
+    var upperBound = Double.NegativeInfinity
 
     var oldGuess = Array[Int]()
     var guess = Array[Int](0)
@@ -122,19 +184,23 @@ object HelloWorld {
             oldGuess = guess.clone()
             guess = nextSubtree(sizeOfSolution, guess.clone())
         } else {
-          var upperBound = solveRelaxation(table, guess)
-          if (upperBound < lowerBound) {
+          var bound = solveRelaxation(table, guess)
+          if (bound < lowerBound) {
             println("skip subtree")
             oldGuess = guess.clone()
             guess = nextSubtree(sizeOfSolution, guess.clone())
           } else {
+            if (bound > upperBound) {
+                upperBound = bound
+            }
             oldGuess = guess.clone()
             guess = nextSolution(sizeOfSolution, guess.clone())
           }
         }
 
         println("guess: " + arrayToString(guess));
-        println("lower bound: " + lowerBound);
+        println("best guess: " + arrayToString(bestGuess));
+        println(lowerBound + " < value < " + upperBound);
     }
 
     println("num iterations: " + i);

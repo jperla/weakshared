@@ -160,5 +160,6 @@ export PATH=$PATH:/var/lib/gems/1.8/bin/
 export JAVA_HOME="/etc/alternatives/java_sdk_1.6.0"
 export SCALA_HOME="/home/princeton_ram/scala-2.9.1.final"
 export MYSQL_CONNECTOR_JAR="/usr/share/java/mysql-connector-java.jar"
+export JAVA_OPTS="-Xmx4096m"
 
 umask 002
