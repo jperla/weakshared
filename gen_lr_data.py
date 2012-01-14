@@ -3,7 +3,7 @@ import math
 import sys
 
 num_dims = 500
-num_examples = 1000000
+num_examples = 700000
 output_file = open("lr_data.txt", 'w')
 output_weight_file = open("lr_weight.txt", 'w')
 
@@ -21,7 +21,7 @@ def vector_to_string(v):
 	return(ret_str)
 
 def write_example_to_file(x, y):
-	to_write = vector_to_string(x) + "," + str(y) + "\n"
+	to_write = str(y) + "," + vector_to_string(x) + "\n"
 	output_file.write(to_write)
 
 def inner_product(w, x):

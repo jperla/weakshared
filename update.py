@@ -64,9 +64,6 @@ def print_logs():
     return run_on_all_nodes(command, print_output=True)
 
 if __name__ == '__main__':
-    #symlink_java_shit()
-    #install_packages_on_all_nodes()
-
     if len(sys.argv) <= 1:
         print 'What to update? compile, fixmesos, rsync, clearlogs, printlogs'
     else: 
@@ -75,7 +72,10 @@ if __name__ == '__main__':
         # by default, just do nodes 10-12, but add all70 to do all 70 nodes
         other_nodes = [10] + range(12, 13)
         if 'all70' in todo:
-            other_nodes = [10] + range(12, 71)
+            other_nodes = range(1,11) + range(12, 71)
+
+        #install_packages_on_all_nodes()
+        #symlink_java_shit()
 
         if 'compile' in todo:
             sbtcompile()
