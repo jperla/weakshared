@@ -11,7 +11,7 @@ import org.apache.commons.math.optimization.linear.NoFeasibleSolutionException
 
 
 
-object HelloWorld {
+object IntProg {
   type Guess = Array[Int]
 
   def getLHS(row : Array[Double]) : Array[Double] = {
