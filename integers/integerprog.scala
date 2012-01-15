@@ -1,4 +1,4 @@
-package spark
+package integerprog
 
 import scala.io.Source
 import java.util.ArrayList
@@ -10,10 +10,7 @@ import org.apache.commons.math.optimization.RealPointValuePair;
 import org.apache.commons.math.optimization.linear.NoFeasibleSolutionException
 
 
-
 object IntProg {
-  type Guess = Array[Int]
-
   def getLHS(row : Array[Double]) : Array[Double] = {
     val sizeOfSolution = row.size - 1
     var lhs = new Array[Double](sizeOfSolution)
@@ -23,7 +20,7 @@ object IntProg {
     return lhs
   }
   
-  def solveRelaxation(table : Array[Array[Double]], guessed : Guess) : Double = {
+  def solveRelaxation(table : Array[Array[Double]], guessed : Array[Int]) : Double = {
     val sizeOfSolution = table(0).size - 1
 
     var objective = new Array[Double](sizeOfSolution)
@@ -85,7 +82,7 @@ object IntProg {
     return max
   }
 
-  def nextSubtree(sizeOfSolution : Int, guess : Guess) : Guess = {
+  def nextSubtree(sizeOfSolution : Int, guess : Array[Int]) : Array[Int] = {
     val s = guess.size
     println("nextSubtree of " + arrayToString(guess))
     if (guess(s-1) == 1) {
@@ -116,7 +113,7 @@ object IntProg {
   }
 
   // this is depth first
-  def nextSolution(sizeOfSolution : Int, guess : Guess) : Guess = {
+  def nextSolution(sizeOfSolution : Int, guess : Array[Int]) : Array[Int] = {
     val s = guess.size
     if (s == sizeOfSolution) {
       if (guess(s - 1) == 0) {
@@ -153,6 +150,8 @@ object IntProg {
     }
     return true
   }
+
+
 
   def main(args: Array[String]) {
     // get the data into array of array (table)
