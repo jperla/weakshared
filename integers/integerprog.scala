@@ -1,3 +1,5 @@
+package spark
+
 import scala.io.Source
 import java.util.ArrayList
 import org.apache.commons.math.optimization.linear._
@@ -86,28 +88,28 @@ object HelloWorld {
   def nextSubtree(sizeOfSolution : Int, guess : Guess) : Guess = {
     val s = guess.size
     println("nextSubtree of " + arrayToString(guess))
-    if (guess(s-1) == 0) {
-      println("last is 0")
-      guess(s-1) = 1
+    if (guess(s-1) == 1) {
+      println("last is 1")
+      guess(s-1) = 0
       return guess
     } else {
-      println("last is 1")
+      println("last is 0")
       // go back to last zero
       var i = s-1
-      while (i >= 0 && guess(i) == 1) {
+      while (i >= 0 && guess(i) == 0) {
           i -= 1
       }
-      var lastZero = i
+      var lastOne = i
     
-      if (lastZero > -1) {
-        val newGuess = new Array[Int](lastZero + 1)
+      if (lastOne > -1) {
+        val newGuess = new Array[Int](lastOne + 1)
         for(i <- 0 until newGuess.size) {
           newGuess.update(i, guess(i))
         }
-        newGuess.update(lastZero, 1)
+        newGuess.update(lastOne, 0)
         return newGuess
       } else {
-        // all 1's, so return null? itself?
+        // all 0's, so return null? itself?
         return null
       }
     }
@@ -117,15 +119,15 @@ object HelloWorld {
   def nextSolution(sizeOfSolution : Int, guess : Guess) : Guess = {
     val s = guess.size
     if (s == sizeOfSolution) {
-      if (guess(s - 1) == 1) {
+      if (guess(s - 1) == 0) {
         // done, hit end, remove 1's, 
         return nextSubtree(sizeOfSolution, guess)
       } else {
-        guess(s - 1) = 1
+        guess(s - 1) = 0
         return guess
       }
     } else {
-      return guess ++ Array(0)
+      return guess ++ Array(1)
     }
   }
 
@@ -154,7 +156,7 @@ object HelloWorld {
 
   def main(args: Array[String]) {
     // get the data into array of array (table)
-    val source = Source.fromFile("program.csv")
+    val source = Source.fromFile("biggest.csv")
     val lines = source.mkString.split("\n")
     source.close()
     val table = lines.map(l => l.split(",").map(i => i.toDouble))
@@ -166,7 +168,7 @@ object HelloWorld {
     var upperBound = Double.NegativeInfinity
 
     var oldGuess = Array[Int]()
-    var guess = Array[Int](0)
+    var guess = Array[Int](1)
     var i = 0
     while(guess != null && oldGuess != guess) {
         i += 1

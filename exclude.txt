@@ -1,2 +1,3 @@
 /home/princeton_ram/mesos/logs/*
 /home/princeton_ram/mesos/work/*
+/home/princeton_ram/weakshared/*

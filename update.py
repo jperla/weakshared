@@ -20,9 +20,9 @@ def run_on_all_nodes(command, print_output=False):
     for output in outputs:
         o,e = output.communicate()
         if print_output:
-            print o
+            print o + '\n'
         if e is not None:
-            print e, '\n\n'
+            print e + '\n\n'
 
 def install_packages_on_all_nodes():
     command = 'sudo yum -y install vim git htop java-1.6.0-openjdk-devel libunwind.x86_64 libsqlite3x-devel.x86_64 cppunit-devel.x86_64 cppunit.x86_64 && sudo yum -y groupinstall "Development Tools"'
@@ -41,7 +41,7 @@ def rsync_all():
     for output in outputs:
         o,e = output.communicate()
         if e is not None:
-            print e, '\n'
+            print e + '\n\n'
  
 def clear_logs():
     command = 'rm -rf {0}/mesos/work/*'.format(homedir)
@@ -56,7 +56,7 @@ def fixmesos():
     return subprocess.call(['{0}/mesos/deploy/fix_mesos.sh'.format(homedir)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 def sbtcompile():
-    return subprocess.call(['{0}/spark/sbt/sbt'.format(homedir), 'compile'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    return subprocess.call(['{0}/spark/sbt/sbt'.format(homedir), 'compile'])
     
 
 def print_logs():

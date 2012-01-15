@@ -2,8 +2,8 @@ import random
 import math
 import sys
 
-num_dims = 500
-num_examples = 700000
+num_dims = 5
+num_examples = 7000
 output_file = open("lr_data.txt", 'w')
 output_weight_file = open("lr_weight.txt", 'w')
 
