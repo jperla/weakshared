@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-
 import sys
+import string
 import subprocess
 
 homedir = '/home/princeton_ram'
@@ -8,6 +8,11 @@ homedir = '/home/princeton_ram'
 def remote_run(node, command):
     c = subprocess.Popen(['ssh', '-t', '-o', 'StrictHostKeyChecking=no', 'node%s.princeton.vicci.org' % node, '-X',] + command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return c
+
+def doprint(message):
+    """Cleans the message before printing it."""
+    message = ''.join([m for m in message if m in string.printable[:-5]])
+    print message + '\n'
 
 def run_on_all_nodes(command, print_output=False):
     outputs = []
@@ -20,9 +25,9 @@ def run_on_all_nodes(command, print_output=False):
     for output in outputs:
         o,e = output.communicate()
         if print_output:
-            print o + '\n'
+            doprint(o + '\n')
         if e is not None:
-            print e + '\n\n'
+            doprint(e + '\n\n')
 
 def install_packages_on_all_nodes():
     command = 'sudo yum -y install vim git htop java-1.6.0-openjdk-devel libunwind.x86_64 libsqlite3x-devel.x86_64 cppunit-devel.x86_64 cppunit.x86_64 && sudo yum -y groupinstall "Development Tools"'
@@ -33,7 +38,7 @@ def rsync_all():
     # runs in parallel
     for n in other_nodes:
         command = 'rsync -a -r --exclude-from {0}/weakshared/exclude.txt -P {0}/ node{1}.princeton.vicci.org:{0}'.format(homedir, n)
-        print command
+        doprint(command)
         # command = 'rsync -a -r -P {0}/spark/ node{1}.princeton.vicci.org:{0}/spark'.format(dir, n)
         c = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         outputs.append(c)
@@ -41,7 +46,7 @@ def rsync_all():
     for output in outputs:
         o,e = output.communicate()
         if e is not None:
-            print e + '\n\n'
+            doprint(e + '\n\n')
  
 def clear_logs():
     command = 'rm -rf {0}/mesos/work/*'.format(homedir)
@@ -70,7 +75,7 @@ if __name__ == '__main__':
         todo = sys.argv[1:]
 
         # by default, just do nodes 10-12, but add all70 to do all 70 nodes
-        other_nodes = [10] + range(12, 13)
+        other_nodes = range(12, 21)
         if 'all70' in todo:
             other_nodes = range(1,11) + range(12, 71)
 
@@ -79,6 +84,8 @@ if __name__ == '__main__':
 
         if 'compile' in todo:
             sbtcompile()
+
+	install_packages_on_all_nodes()
 
         if 'rsync' in todo:
             rsync_all()
